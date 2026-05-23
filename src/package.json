@@ -1,0 +1,19 @@
+{
+  "unity": "2021.2",
+  "name": "com.nk7.data.structures",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {},
+  "author": {
+    "name": "lsd7nk",
+    "url": "https://github.com/s-elovikov"
+  },
+  "keywords": [
+    "data-structures",
+    "collections",
+    "performance",
+    "low-allocation"
+  ],
+  "displayName": "Nk7 Data Structures",
+  "description": "Lightweight custom data structures for Unity/C#, focused on predictable performance and low allocations"
+}
