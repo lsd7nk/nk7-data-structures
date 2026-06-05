@@ -7,21 +7,36 @@ namespace Nk7.DataStructures
 {
     public sealed class PriorityQueue<TItem, TPriority> : IDisposable
     {
-        private const byte GROWTH_SHIFT = 1;
-        private const int DEFAULT_CAPACITY = 4;
-        
-        public int Capacity { get; private set; }
-        public int Count { get; private set; }
+        public int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                ThrowIfDisposed();
+                return _nodes.Length;
+            }
+        }
+
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                ThrowIfDisposed();
+                return _count;
+            }
+        }
 
         private readonly IComparer<TPriority> _comparer;
 
         private Node[] _nodes;
         private bool _isDisposed;
+        private int _count;
 
-        public PriorityQueue(int capacity = DEFAULT_CAPACITY)
+        public PriorityQueue(int capacity = CollectionUtils.DEFAULT_CAPACITY)
             : this(capacity, Comparer<TPriority>.Default) { }
 
-        public PriorityQueue(int capacity = DEFAULT_CAPACITY, IComparer<TPriority> comparer = null)
+        public PriorityQueue(int capacity = CollectionUtils.DEFAULT_CAPACITY, IComparer<TPriority> comparer = null)
         {
             if (capacity <= 0)
             {
@@ -33,8 +48,7 @@ namespace Nk7.DataStructures
             _comparer = comparer
                 ?? Comparer<TPriority>.Default;
 
-            Count = 0;
-            Capacity = _nodes.Length;
+            _count = 0;
         }
 
         public void Dispose()
@@ -51,9 +65,8 @@ namespace Nk7.DataStructures
                 ArrayPool<Node>.Shared.Return(_nodes, RuntimeHelpers.IsReferenceOrContainsReferences<Node>());
                 _nodes = Array.Empty<Node>();
             }
-            
-            Count = 0;
-            Capacity = 0;
+
+            _count = 0;
         }
 
         public void Clear()
@@ -62,22 +75,22 @@ namespace Nk7.DataStructures
 
             if (RuntimeHelpers.IsReferenceOrContainsReferences<Node>())
             {
-                Array.Clear(_nodes, 0, Count);
+                Array.Clear(_nodes, 0, _count);
             }
 
-            Count = 0;
+            _count = 0;
         }
 
         public void Enqueue(TItem item, TPriority priority)
         {
             ThrowIfDisposed();
 
-            if (Count == Capacity)
+            if (_count == _nodes.Length)
             {
                 Grow();
             }
 
-            _nodes[Count++] = new Node(item, priority);
+            _nodes[_count++] = new Node(item, priority);
             BubbleUp();
         }
 
@@ -88,10 +101,10 @@ namespace Nk7.DataStructures
 
             var node = _nodes[0];
 
-            _nodes[0] = _nodes[--Count];
-            _nodes[Count] = default;
+            _nodes[0] = _nodes[--_count];
+            _nodes[_count] = default;
 
-            if (Count > 0)
+            if (_count > 0)
             {
                 BubbleDown();
             }
@@ -109,21 +122,18 @@ namespace Nk7.DataStructures
 
         private void Grow()
         {
-            int newCapacity = Capacity == 0
-                ? DEFAULT_CAPACITY
-                : _nodes.Length << GROWTH_SHIFT;
+            int newCapacity = _nodes.Length << CollectionUtils.GROWTH_SHIFT;
             var newNodes = ArrayPool<Node>.Shared.Rent(newCapacity);
 
-            Array.Copy(_nodes, newNodes, Count);
+            Array.Copy(_nodes, newNodes, _count);
             ArrayPool<Node>.Shared.Return(_nodes, RuntimeHelpers.IsReferenceOrContainsReferences<Node>());
 
             _nodes = newNodes;
-            Capacity = _nodes.Length;
         }
 
         private void BubbleUp()
         {
-            int index = Count - 1;
+            int index = _count - 1;
 
             while (index > 0)
             {
@@ -148,14 +158,14 @@ namespace Nk7.DataStructures
                 int leftChildIndex = BinaryHeapUtils.GetLeftChildIndex(index);
                 int rightChildIndex = BinaryHeapUtils.GetRightChildIndex(index);
 
-                if (leftChildIndex >= Count)
+                if (leftChildIndex >= _count)
                 {
                     break;
                 }
 
                 int bestChildIndex = leftChildIndex;
 
-                if (rightChildIndex < Count
+                if (rightChildIndex < _count
                     && Compare(rightChildIndex, leftChildIndex) < 0)
                 {
                     bestChildIndex = rightChildIndex;
@@ -200,7 +210,7 @@ namespace Nk7.DataStructures
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowIfEmpty()
         {
-            if (Count > 0)
+            if (_count > 0)
             {
                 return;
             }
