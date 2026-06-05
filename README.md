@@ -28,7 +28,7 @@ Lightweight custom data structures for Unity/C#, focused on predictable performa
 ### Unity Package Manager
 1. Open Unity Package Manager (`Window -> Package Manager`).
 2. Click `+ -> Add package from git URL...`.
-3. Enter `https://github.com/s-elovikov/nk7-data-structures.git?path=src`.
+3. Enter `https://github.com/lsd7nk/nk7-data-structures.git?path=src`.
 
 Unity does not auto-update Git-based packages; update the hash manually when needed or use [UPM Git Extension](https://github.com/mob-sakai/UpmGitExtension).
 
